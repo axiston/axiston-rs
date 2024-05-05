@@ -1,0 +1,38 @@
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+name: Build
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, windows-latest, macos-latest ]
+        toolchain: [ stable ]
+    runs-on: ${{ matrix.os }}
+    steps:
+
+      - name: Set up Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          toolchain: ${{ matrix.toolchain }}
+
+      - name: Check out
+        uses: actions/checkout@v4
+
+      - name: Set up Cache
+        uses: Swatinem/rust-cache@v2
+
+      - name: Run Cargo:fmt
+        run: cargo fmt --all -- --check
+
+      - name: Run Cargo:clippy
+        run: cargo clippy --all-features -- -D warnings
+
+      - name: Run Cargo:test
+        run: cargo test --verbose --all-features

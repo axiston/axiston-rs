@@ -1,0 +1,31 @@
+# https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[package]
+name = "axiston"
+version = "0.1.0"
+edition = "2021"
+
+license = "MIT"
+readme = "./README.md"
+
+authors = ["Oleh Martsokha <o.martsokha@gmail.com>"]
+repository = "https://github.com/axiston/axiston-rs"
+homepage = "https://axiston.com"
+documentation = "https://docs.rs/axiston"
+
+categories = ["web-programming"]
+keywords = ["sdk"]
+description = "A minimal Axiston client."
+
+[features]
+default = ["native-tls"]
+native-tls = ["reqwest/native-tls"]
+rustls-tls = ["reqwest/rustls-tls"]
+
+[dependencies]
+reqwest = { version = "0.12.4", default-features = false, features = ["json"] }
+serde = { version = "1.0.200", default-features = false, features = ["derive"] }
+thiserror = { version = "1.0.59" }
+
+[dev-dependencies]
+tokio = { version = "1.37.0", features = ["macros", "test-util", "rt-multi-thread"] }
