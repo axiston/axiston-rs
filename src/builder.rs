@@ -1,4 +1,4 @@
-use std::fmt;
+use std::{env, fmt};
 
 use reqwest::{Client as RwClient, Url};
 
@@ -15,6 +15,8 @@ pub struct Builder {
 
 impl Builder {
     /// Creates a new [`Builder`].
+    ///
+    /// Same as [`Client::builder`].
     pub fn new(api_key: &str) -> Self {
         Self {
             api_key: api_key.to_owned(),
@@ -34,7 +36,7 @@ impl Builder {
 
     /// Overrides the `User-Agent` header.
     ///
-    /// Default value: `axiston-rs/0.1.0`
+    /// Default value: `Axiston/0.1.0 (Rust; Ver 1.70.0)`
     pub fn with_user_agent(mut self, user_agent: &str) -> Self {
         self.user_agent = Some(user_agent.to_owned());
         self
@@ -49,6 +51,11 @@ impl Builder {
     }
 
     /// Creates a new [`Client`].
+    ///
+    /// ### Panics
+    ///
+    /// - Panics if the environment variable `AXISTON_BASE_URL` is set but is not a valid `URL`.
+    /// - Panics if the environment variable `AXISTON_USER_AGENT` is set but is not a valid `String`.
     pub fn build(self) -> Client {
         let config = Config {
             api_key: self.api_key,
@@ -61,6 +68,20 @@ impl Builder {
     }
 }
 
+impl Default for Builder {
+    /// Creates a new [`Builder`] from environment variables.
+    ///
+    /// ### Panics
+    ///
+    /// - Panics if the environment variable `AXISTON_API_KEY` is not set.
+    fn default() -> Self {
+        let api_key = env::var("AXISTON_API_KEY")
+            .expect("env variable `AXISTON_API_KEY` should be a valid API key");
+
+        Self::new(&api_key)
+    }
+}
+
 impl fmt::Debug for Builder {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         f.debug_struct("Builder").finish_non_exhaustive()
@@ -68,13 +89,21 @@ impl fmt::Debug for Builder {
 }
 
 fn default_base_url() -> Url {
+    if let Ok(x) = env::var("AXISTON_BASE_URL") {
+        return Url::parse(&x).expect("env variable `AXISTON_BASE_URL` should be a valid URL");
+    }
+
     Url::parse("https://api.axiston.com").unwrap()
 }
 
 fn default_user_agent() -> String {
+    if let Ok(x) = env::var("AXISTON_USER_AGENT") {
+        return x;
+    };
+
     format!(
-        "{}-rs/{}",
-        env!("CARGO_PKG_NAME"),
-        env!("CARGO_PKG_VERSION")
+        "Axiston/{} (Rust; Ver {})",
+        env!("CARGO_PKG_VERSION"),
+        env!("CARGO_PKG_RUST_VERSION")
     )
 }

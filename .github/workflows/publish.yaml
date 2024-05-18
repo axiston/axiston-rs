@@ -12,13 +12,13 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
 
+      - name: Check out
+        uses: actions/checkout@v4
+
       - name: Set up Rust
         uses: dtolnay/rust-toolchain@stable
         with:
           toolchain: ${{ matrix.toolchain }}
-
-      - name: Check out
-        uses: actions/checkout@v4
 
       - name: Set up Cache
         uses: Swatinem/rust-cache@v2
@@ -29,7 +29,7 @@ jobs:
       - name: Run Cargo:semver
         run: cargo semver-checks check-release
 
-      - name: Publish
+      - name: Publish to crates.io
         run: cargo publish --token ${CRATES_TOKEN}
         env:
           CRATES_TOKEN: ${{ secrets.CRATES_TOKEN }}

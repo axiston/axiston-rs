@@ -1,7 +1,7 @@
+use std::fmt;
 use std::sync::Arc;
-use std::{env, fmt};
 
-use reqwest::{Client as RwClient, Url};
+use reqwest::Client as RwClient;
 
 use crate::{Builder, Config, Result};
 
@@ -26,6 +26,11 @@ pub struct Client {
 impl Client {
     /// Creates a new [`Axiston`] client.
     ///
+    /// ### Panics
+    ///
+    /// - Panics if the environment variable `AXISTON_BASE_URL` is set but is not a valid `URL`.
+    /// - Panics if the environment variable `AXISTON_USER_AGENT` is set but is not a valid `String`.
+    ///
     /// [`Axiston`]: https://axiston.com
     pub fn new(api_key: &str) -> Self {
         Builder::new(api_key).build()
@@ -40,6 +45,7 @@ impl Client {
 
     /// Returns `Ok(())` if the service is healthy.
     pub async fn health(&self) -> Result<()> {
+        // TODO.
         Ok(())
     }
 
@@ -83,21 +89,7 @@ impl Default for Client {
     /// - Panics if the environment variable `AXISTON_BASE_URL` is set but is not a valid `URL`.
     /// - Panics if the environment variable `AXISTON_USER_AGENT` is set but is not a valid `String`.
     fn default() -> Self {
-        let api_key = env::var("AXISTON_API_KEY")
-            .expect("env variable `AXISTON_API_KEY` should be a valid API key");
-        let mut builder = Self::builder(&api_key);
-
-        if let Ok(x) = env::var("AXISTON_BASE_URL") {
-            builder = builder.with_base_url(
-                Url::parse(&x).expect("env variable `AXISTON_BASE_URL` should be a valid URL"),
-            );
-        }
-
-        if let Ok(x) = env::var("AXISTON_USER_AGENT") {
-            builder = builder.with_user_agent(&x);
-        }
-
-        builder.build()
+        Builder::default().build()
     }
 }
 
@@ -115,6 +107,7 @@ mod test {
     #[test]
     fn create() -> Result<()> {
         let _ = Client::new("");
+        let _ = Client::builder("").build();
         let _ = Client::default();
         Ok(())
     }

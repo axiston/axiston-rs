@@ -20,6 +20,7 @@ pub(crate) use config::Config;
 mod builder;
 mod client;
 mod config;
+mod services;
 
 pub mod types {
     //! Request and response types.
@@ -27,16 +28,19 @@ pub mod types {
     /// List specifying general categories of [`ErrorResponse`]s.
     #[derive(Debug, Copy, Clone)]
     pub enum ErrorKind {
-        /// Error name is not a part of the `API` spec.
+        /// Error name is not a part of the implemented `API` spec.
         Unrecognized,
     }
 
     /// Errors that may occur when processing an API request.
     #[derive(Debug, thiserror::Error, serde::Deserialize)]
-    #[error("{message}")]
+    #[error("'{name}': {message}")]
     pub struct ErrorResponse {
         pub name: String,
         pub message: String,
+
+        #[serde(skip)]
+        status: u16,
     }
 
     impl ErrorResponse {

@@ -35,8 +35,3 @@ env/
 logs/
 *.log
 *.log*
-
-
-# Added by cargo
-
-/target
